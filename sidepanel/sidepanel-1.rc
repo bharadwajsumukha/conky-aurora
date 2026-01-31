@@ -1,5 +1,5 @@
 -- sidepanel-1.rc - Conky Sidepanel with Lua Analog Clock-Weather-Calendar-Earth-Moon-System-Lua Network
--- v3 03 2026-01-19 @rew62
+-- v3 04 2026-01-31 @rew62
 
 conky.config = {
   --Various settings
@@ -65,7 +65,7 @@ conky.config = {
   
   own_window = true,				-- create your own window to draw
   -- --own_window_argb_value = 150,		-- real transparency - composite manager required 0-255
-  own_window_argb_visual = true,		-- use ARGB - composite manager required
+  --own_window_argb_visual = true,		-- use ARGB - composite manager required
   own_window_class = 'Conky',			-- manually set the WM_CLASS name for use with xprop
   own_window_colour = 'FFFFFF',			-- set colour if own_window_transparent no
   own_window_hints = 'undecorated,below,above,sticky,skip_taskbar,skip_pager',  -- if own_window true - just hints - own_window_type sets it
@@ -75,7 +75,7 @@ conky.config = {
   	
   --Colours
   
-  -- --default_color = 'black',  		-- default color and border color
+  --default_color = 'black',  			-- default color and border color
   default_color = '8FBC8F',
   -- color1 = '#888888', 
   -- color2 = '#AAAAAA', 
@@ -113,7 +113,7 @@ conky.config = {
 };
 
 conky.text = [[
-${execi 1800 ./scripts/update-moon.sh}\
+${execi 1800 ./scripts/update-moon.sh -t}\
 ${color4}${alignr}${font :size=16}${time %r}${font}
 #----------------------- Weather -----------------------
 ${alignc}${execpi 300 ./scripts/weather.lua}
@@ -128,7 +128,7 @@ ${voffset 116}
 ${color1}${font3}MOON: --${font3}${voffset -10}
 ${if_existing /dev/shm/moon_script_error}${font Symbola:size=8}${color red}${goto 5}● ${else}${font Symbola:size=3}${color green}${goto 15}●${endif}
 ${voffset -26}${execpi 300 cat /dev/shm/moon-data.txt 2>/dev/null || cat $HOME/.conky/rew62/sidepanel/.cache/moon-data.bak 2>/dev/null}
-${image /dev/shm/moon.jpg -p 20, 540 -s 65x65 -n}
+${image /dev/shm/moon_rotated.png -p 20, 540 -s 65x65 -n}
 #-----------------------System Information -----------------------
 ${voffset -20}${color1}${font3}SYSTEM: ${voffset -5} ____  ${voffset 5}$alignr${color #86BE43}${font Hack Nerd Font:size=11}󰣭 ${voffset -2}${font3}${color4}${execi 86400 lsb_release -ds}${color3}
 ${template2 Uptime}$alignr$uptime_short

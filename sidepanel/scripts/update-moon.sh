@@ -1,6 +1,7 @@
 #!/usr/bin/bash
-# update-moon.sh: script to retrieve moon illumination from moongiant, calculate phase, and get moon image from NASA API. (New Method)
-# v3.1 2026-01-29 @rew62
+# update-moon.sh: script to retrieve moon illumination from moongiant, calculate phase, and get moon image from NASA API. (PNG Only)
+# Usage: update-moon.sh [--transform]
+# v3.4 2026-01-31 @rew62
 
 OUTPUT_DIR="/dev/shm"
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
@@ -68,7 +69,8 @@ if wget -T 10 -t 2 -O "${OUTPUT_DIR}/raw.tmp" --user-agent="$UA" \
         } > "${OUTPUT_DIR}/moon-data.new"
 
 	mv "${OUTPUT_DIR}/moon-data.new" "${OUTPUT_DIR}/moon-data.txt"
-        cp "${OUTPUT_DIR}/moon-data.txt" "$CACHE_DIR/moon-data.bak"
+        [ ! -f "$CACHE_DIR/moon-data.bak" ] || [ $((NOW_EPOCH - $(stat -c %Y "$CACHE_DIR/moon-data.bak"))) -ge 14400 ] && \
+            cp "${OUTPUT_DIR}/moon-data.txt" "$CACHE_DIR/moon-data.bak"
     else
         log "Moongiant returned empty file"
     fi
@@ -76,24 +78,29 @@ else
     log "Moongiant wget failed"
 fi
 
-# --- 3. FETCH MOON IMAGE (UPDATED METHOD USING NASA DIAL-A-MOON API) ---
+# --- 3. FETCH MOON IMAGE (NASA DIAL-A-MOON API - PNG ONLY) ---
 NOW_UTC=$(date -u +"%Y-%m-%dT%H:00")
 NASA_API="https://svs.gsfc.nasa.gov/api/dialamoon/${NOW_UTC}"
 
 if wget -q -T 10 -t 2 -O "${OUTPUT_DIR}/dialamoon.json" --user-agent="$UA" "$NASA_API" 2>>"$LOGFILE"; then
     if [ -s "${OUTPUT_DIR}/dialamoon.json" ]; then
-        # Extract the 730x730 image URL from JSON
         img_url=$(grep -A2 '"image":' "${OUTPUT_DIR}/dialamoon.json" | grep '"url":' | head -1 | sed 's/.*"url": "\([^"]*\)".*/\1/')
-        
         if [ -n "$img_url" ]; then
-            if wget -q -T 15 -t 2 -O "${OUTPUT_DIR}/moon_new.jpg" --user-agent="$UA" "$img_url" 2>>"$LOGFILE"; then
-                if [ -s "${OUTPUT_DIR}/moon_new.jpg" ]; then
-                    # Update modification time to now since NASA serves pre-rendered files
-                    touch "${OUTPUT_DIR}/moon_new.jpg"
-                    mv "${OUTPUT_DIR}/moon_new.jpg" "${OUTPUT_DIR}/moon.jpg"
-                    cp "${OUTPUT_DIR}/moon.jpg" "$CACHE_DIR/moon.jpg.bak"
+            if wget -q -T 15 -t 2 -O "${OUTPUT_DIR}/moon_temp.jpg" --user-agent="$UA" "$img_url" 2>>"$LOGFILE"; then
+                if [ -s "${OUTPUT_DIR}/moon_temp.jpg" ]; then
+                    if convert "${OUTPUT_DIR}/moon_temp.jpg" -fuzz 10% -transparent black "${OUTPUT_DIR}/moon_new.png"; then
+                        touch "${OUTPUT_DIR}/moon_new.png"
+                        mv "${OUTPUT_DIR}/moon_new.png" "${OUTPUT_DIR}/moon.png"
+                        [ ! -f "$CACHE_DIR/moon.png.bak" ] || [ $((NOW_EPOCH - $(stat -c %Y "$CACHE_DIR/moon.png.bak"))) -ge 14400 ] && \
+                            cp "${OUTPUT_DIR}/moon.png" "$CACHE_DIR/moon.png.bak"
+                        rm -f "${OUTPUT_DIR}/moon_temp.jpg"
+                    else
+                        log "ImageMagick conversion to PNG failed"
+                        rm -f "${OUTPUT_DIR}/moon_temp.jpg"
+                    fi
                 else
                     log "NASA moon image download returned empty file"
+                    rm -f "${OUTPUT_DIR}/moon_temp.jpg"
                 fi
             else
                 log "NASA moon image wget failed"
@@ -120,16 +127,22 @@ if [ ! -s "${OUTPUT_DIR}/moon-data.txt" ] && [ -f "$CACHE_DIR/moon-data.bak" ]; 
 fi
 
 # Recover image
-if [ ! -s "${OUTPUT_DIR}/moon.jpg" ] && [ -f "$CACHE_DIR/moon.jpg.bak" ]; then
-    cp -p "$CACHE_DIR/moon.jpg.bak" "${OUTPUT_DIR}/moon.jpg"
-    log "Recovered moon.jpg from cache"
+if [ ! -s "${OUTPUT_DIR}/moon.png" ] && [ -f "$CACHE_DIR/moon.png.bak" ]; then
+    cp -p "$CACHE_DIR/moon.png.bak" "${OUTPUT_DIR}/moon.png"
+    log "Recovered moon.png from cache"
 fi
 
 # Status flag for Conky
-if [ -s "${OUTPUT_DIR}/moon-data.txt" ] && [ -s "${OUTPUT_DIR}/moon.jpg" ]; then
+if [ -s "${OUTPUT_DIR}/moon-data.txt" ] && [ -s "${OUTPUT_DIR}/moon.png" ]; then
     rm -f "$OUTPUT_DIR/moon_script_error"
 else
     touch "$OUTPUT_DIR/moon_script_error"
+fi
+
+
+if [[ "$1" == "--transform" || "$1" == "-t" ]]; then
+    ${SCRIPT_DIR}/moon-rotate.lua "${OUTPUT_DIR}/moon.png" 
+    log "${OUTPUT_DIR}/moon.png angle rotated"
 fi
 
 rm -f "${OUTPUT_DIR}/raw.tmp" "${OUTPUT_DIR}/img.tmp"

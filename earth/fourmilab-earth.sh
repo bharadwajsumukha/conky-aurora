@@ -9,12 +9,18 @@
 # Configuration
 NOW=$(date "+%Y-%m-%d %H:%M:%S")
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+
+# File configuration
 #Save Earth.png to SCRIPT_DIR or tempfs. /dev/shm is standard on Debian based systems including Ubuntu and Linux Mint.
-#EARTH_IMG="$SCRIPT_DIR/earth.png"
-EARTH_IMG="/dev/shm/earth.png"
-BACKUP_IMG="$SCRIPT_DIR/earth_backup.png"  # Persistent Backup 
-TEMP_FILE="$EARTH_IMG.tmp"
-THRESHOLD_MINS=9 
+OUTPUT_DIR="/dev/shm"              # or use $SCRIPT_DIR for persistent storage
+FILENAME="earth"
+FILE_EXT="png"                     # png or jpg
+
+EARTH_IMG="$OUTPUT_DIR/$FILENAME.$FILE_EXT"
+TEMP_FILE="$OUTPUT_DIR/$FILENAME.tmp.$FILE_EXT"
+BACKUP_IMG="$SCRIPT_DIR/${FILENAME}_backup.$FILE_EXT"
+
+THRESHOLD_MINS=9
 WGET_TIMEOUT=30  # Seconds
 
 # Multiple options available at https://www.fourmilab.ch/earthview/custom.html
@@ -34,7 +40,8 @@ fi
 
 # 2. Download and Process
 echo "[$NOW] Downloading and processing image..."
-if wget --timeout="$WGET_TIMEOUT" --tries=2 -qO - "$URL" | convert - -fuzz 10% -transparent black "$TEMP_FILE"; then
+if wget --timeout="$WGET_TIMEOUT" --tries=2 -O - "$URL" | \
+   convert - -fuzz 10% -transparent black "$TEMP_FILE"; then
     if [ -s "$TEMP_FILE" ]; then
         mv "$TEMP_FILE" "$EARTH_IMG"
         # Save a backup copy to persistent storage

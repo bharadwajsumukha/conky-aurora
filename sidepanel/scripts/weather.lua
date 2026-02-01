@@ -20,8 +20,14 @@ end
 
 -- PATHS
 local icon_path = os.getenv("HOME").."/.conky/rew62/weather-icons/"
-local icon_family = "dovora"
-local icon_theme = "light"
+--local icon_family = "dovora"
+--local icon_family = "SagiSan"
+local icon_family = "modern"
+--local icon_family = "owm-4x"
+
+--local icon_theme = "light"
+local icon_theme = "dark"
+
 
 local cache_path = "/dev/shm/"
 local cache_file = cache_path .. "weather.json"
@@ -118,7 +124,35 @@ if timepassed >= 300 then
         if new_fetch and new_fetch.cod == 200 then
             data = new_fetch
             data.timestamp = currenttime
-            
+
+
+	    -- OBif icon_family == "owm-4x" then
+            --     vars.icon_res = cache_path .. data.weather[1].icon .. ".png"
+            --     os.execute("wget -q -N https://openweathermap.org/img/wn/" .. data.weather[1].icon .. "@4x.png -O " .. vars.icon_res)
+            -- end
+
+
+            if icon_family == "owm-4x" then
+                local icon_url = "https://openweathermap.org/img/wn/" .. data.weather[1].icon .. "@4x.png"
+                local icon_out = cache_path .. data.weather[1].icon .. ".png"
+                os.execute("wget -q -U 'Mozilla/5.0' -N " .. icon_url .. " -O " .. icon_out)
+            end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             -- Save JSON
             local w_cache = io.open(cache_file, "w+")
             if w_cache then w_cache:write(json.encode(data)) w_cache:close() end
@@ -182,10 +216,12 @@ local vars = {
     updated      = os.date("%H:%M", data.timestamp)
 }
 
+-- ${image ]] .. icon_path .. icon_theme .. "/" .. icon_family .. [[/$(icon).png -p 150,28 -s 50x50}
+
 -- TEMPLATE
 local conky_text = [[
 ${voffset 20}${goto 85}${font7}${color1}$(location)${color4}
-${image ]] .. icon_path .. icon_theme .. "/" .. icon_family .. [[/$(icon).png -p 150,28 -s 50x50}
+${image ]] .. (icon_family == "owm-4x" and cache_path or (icon_path .. icon_theme .. "/" .. icon_family .. "/")) .. [[$(icon).png -p 150,28 -s 50x50}
 ${voffset -1}${goto 7}${font :size=9}${uppercase ${time %a  %d  %b  |  %Y}}$alignr${time | d: %-j | w: %-U}
 ${voffset 2}${goto 7}${font :size=10}$(temp)$(measure)  |$alignc  $(conditions) $alignr | $(temp_max)/$(temp_min)
 ${voffset 1}${goto 7}${font Hack Nerd Font:size=12}${color1}${color4}${font :size=10}    $(humidity)%      |  ${font Hack Nerd Font:size=12}${color1}  ${color4}${font :size=10}  $(pressure)$alignr${font Symbola:size=11}$(uni_char)

@@ -1,65 +1,49 @@
 #!/usr/bin/lua
--- weather.lua - A lua based weather script using openweathermap 2.5 API. Obtain a key at http://openweathermap.org
--- v3 02 2026-01-23 @rew62
+-- weather.lua - A lua based weather script using openweathermap 2.5 API.
+-- v4.1 2026-02-01 @rew62 | Online Meteocons -> Local Dovora Fallback
 
 local http = require("socket.http")
 local json = require("cjson")
 
--- CONFIGURATION
+-- 1. CONFIGURATION
 local api_url = "http://api.openweathermap.org/data/2.5/weather?"
-cf = "imperial"
+local cf = "imperial"
+local USE_ONLINE = true  -- Set to false to use local SagiSan/Dovora icons
 
--- LOAD ENVIRONMENT (Silently)
+-- 2. LOAD ENVIRONMENT
 local env_path = os.getenv("HOME") .. "/.conky/rew62/.env"
 local f = loadfile(env_path)
-if f then pcall(f) end -- pcall runs it safely; no 'else' means no error printed
+if f then pcall(f) end
+if cf ~= "metric" and cf ~= "imperial" then cf = "imperial" end
 
-if cf ~= "metric" and cf ~= "imperial" then
-    cf = "imperial"
-end
-
--- PATHS
+-- 3. PATHS & CACHE
 local icon_path = os.getenv("HOME").."/.conky/rew62/weather-icons/"
---local icon_family = "dovora"
---local icon_family = "SagiSan"
-local icon_family = "modern"
---local icon_family = "owm-4x"
-
---local icon_theme = "light"
+local icon_family = "SagiSan" -- Change this to "dovora" or "modern" as needed
 local icon_theme = "dark"
-
-
 local cache_path = "/dev/shm/"
 local cache_file = cache_path .. "weather.json"
 local scrape_cache = "/dev/shm/nws_data.txt"
 
--- SETTINGS
-local measure = '°' .. (cf == 'metric' and 'C' or 'F')
-local wind_units = (cf == 'metric' and 'kph' or 'mph')
-local currenttime = os.time()
+-- 4. MAPPINGS
+local uni_icons = { ["01"]="☀", ["02"]="🌤", ["03"]="🌥", ["04"]="☁", ["09"]="🌧", ["10"]="🌦", ["11"]="🌩", ["13"]="🌨", ["50"]="🌫" }
 
--- UNICODE ICONS
-local uni_icons = {
-    ["01"] = "☀", ["02"] = "🌤", ["03"] = "🌥", ["04"] = "☁",
-    ["09"] = "🌧", ["10"] = "🌦", ["11"] = "🌩", ["13"] = "🌨", ["50"] = "🌫",
+local meteo_map = {
+    [200]="thunderstorms-rain", [201]="thunderstorms-rain", [202]="thunderstorms-rain",
+    [300]="drizzle", [500]="rain", [501]="rain", [600]="snow", [701]="mist",
+    [800]="clear", [801]="cloudy", [802]="cloudy", [803]="overcast", [804]="overcast"
 }
 
---- HELPER FUNCTIONS ---
-
+-- 5. HELPERS
 local function math_round(n) return math.floor(n + 0.5) end
 
 local function degrees_to_direction(d)
-    local val = math.floor(d/22.5 + 0.5)
     local directions = {[0]="N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"}
-    return directions[val % 16]
+    return directions[math.floor(d/22.5 + 0.5) % 16]
 end
 
 local function format_time_portable(timestamp)
-    local hour_12h = os.date("%I", timestamp)
-    if string.sub(hour_12h, 1, 1) == "0" then hour_12h = string.sub(hour_12h, 2) end
-    local minute = os.date("%M", timestamp)
-    local am_pm_char = string.lower(os.date("%p", timestamp):sub(1,1))
-    return hour_12h .. ":" .. minute .. am_pm_char
+    local h = os.date("%I", timestamp):gsub("^0", "")
+    return h .. ":" .. os.date("%M", timestamp) .. string.lower(os.date("%p", timestamp):sub(1,1))
 end
 
 local function cardinal_direction(deg)
@@ -74,7 +58,7 @@ local function cardinal_direction(deg)
     return "N", "↓"
 end
 
--- SVG GENERATORS (Now strictly called once every 5 mins)
+-- SVG GENERATORS
 local function save_svg(filename, content)
     local file = io.open(filename, "w")
     if file then file:write(content) file:close() end
@@ -101,113 +85,93 @@ local function create_arrows(deg, speed, ts)
     save_svg(cache_path .. "wind_dynamic_" .. clean_ts .. ".svg", svg3)
 end
 
---- DATA PROCESSING ---
-
+-- 6. DATA FETCHING
 local data
 local f_cache = io.open(cache_file, "r")
 if f_cache then
     local content = f_cache:read("*all")
     f_cache:close()
-    local ok, decoded = pcall(json.decode, content)
-    if ok then data = decoded end
+    pcall(function() data = json.decode(content) end)
 end
 
-local timepassed = data and os.difftime(currenttime, data.timestamp or 0) or 9999
-
--- FETCH DATA BLOCK
-if timepassed >= 300 then
+local currenttime = os.time()
+if (not data) or (os.difftime(currenttime, data.timestamp or 0) >= 300) then
     local url = ("%sid=%s&units=%s&APPID=%s"):format(api_url, cityid, cf, apikey)
     local response, code = http.request(url)
-    
     if response and code == 200 then
-        local new_fetch = json.decode(response)
-        if new_fetch and new_fetch.cod == 200 then
-            data = new_fetch
-            data.timestamp = currenttime
-
-
-	    -- OBif icon_family == "owm-4x" then
-            --     vars.icon_res = cache_path .. data.weather[1].icon .. ".png"
-            --     os.execute("wget -q -N https://openweathermap.org/img/wn/" .. data.weather[1].icon .. "@4x.png -O " .. vars.icon_res)
-            -- end
-
-
-            if icon_family == "owm-4x" then
-                local icon_url = "https://openweathermap.org/img/wn/" .. data.weather[1].icon .. "@4x.png"
-                local icon_out = cache_path .. data.weather[1].icon .. ".png"
-                os.execute("wget -q -U 'Mozilla/5.0' -N " .. icon_url .. " -O " .. icon_out)
-            end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            -- Save JSON
-            local w_cache = io.open(cache_file, "w+")
-            if w_cache then w_cache:write(json.encode(data)) w_cache:close() end
-
-            -- Clean old SVGs and Create new ones
-            os.execute("rm " .. cache_path .. "wind_*.svg 2>/dev/null")
-            -- create_arrows(data.wind.deg, data.timestamp)
-            create_arrows(data.wind.deg, data.wind.speed, data.timestamp)
-        end
+        data = json.decode(response)
+        data.timestamp = currenttime
+        
+        -- Save JSON cache
+        local w_cache = io.open(cache_file, "w+")
+        if w_cache then w_cache:write(json.encode(data)) w_cache:close() end
+        
+        -- Clean old SVGs and create new wind arrows
+        os.execute("rm " .. cache_path .. "wind_*.svg 2>/dev/null")
+        create_arrows(data.wind.deg, data.wind.speed, data.timestamp)
     end
 end
 
+if not data then io.write("${color red}Weather data unavailable.") return end
 
-if not data then
-    io.write("${color red}Weather data unavailable.")
-    return
+-- 7. ICON LOGIC
+local final_icon = nil
+local icon_code = data.weather[1].icon 
+local icon_id = data.weather[1].id
+
+if USE_ONLINE == true then
+    local dn = icon_code:sub(-1) == "d" and "day" or "night"
+    local mapping = meteo_map[icon_id] or "cloudy"
+    local name_svg = mapping .. "-" .. dn .. ".svg"
+    
+    local url = "https://raw.githubusercontent.com/basmilius/weather-icons/dev/production/fill/svg/" .. name_svg
+    local online_file = cache_path .. "weather_current.svg"
+    
+    os.execute("wget -q -U 'Mozilla/5.0' --timeout=5 '" .. url .. "' -O " .. online_file)
+    
+    local f = io.open(online_file, "r")
+    if f then
+        if f:seek("end") > 0 then final_icon = online_file end
+        f:close()
+    end
 end
 
--- Final Variables
-local cardinal, arrow = cardinal_direction(data.wind.deg)
-local uni_id = data.weather[1].icon:sub(1, 2)
-local uni_char = uni_icons[uni_id] or "✨"
+if not final_icon then
+    final_icon = icon_path .. icon_theme .. "/" .. icon_family .. "/" .. icon_code .. ".png"
+end
 
-local clean_ts = string.format("%.0f", data.timestamp)
-
+-- 8. SCRAPE LOGIC
 local nws_high, nws_low
 local f_nws = io.open(scrape_cache, "r")
 if f_nws then
-    nws_high = f_nws:read("*l") -- Line 1
-    nws_low  = f_nws:read("*l") -- Line 2
+    nws_high = f_nws:read("*l")
+    nws_low  = f_nws:read("*l")
     f_nws:close()
 end
 
+-- 9. WIND ARROW POSITIONING
+local cardinal, arrow = cardinal_direction(data.wind.deg)
+local clean_ts = string.format("%.0f", data.timestamp)
 local wind_str = (degrees_to_direction(data.wind.deg)) .. " | " .. (math_round(data.wind.deg)) .. "°"
-local text_width = #wind_str * 7 -- 7 is usually safer for variable-width fonts
-local dynamic_x = 32 + text_width -- '22' is your starting goto/margin
+local text_width = #wind_str * 7
+local dynamic_x = 32 + text_width
 
--- VARIABLE MAPPING
+-- 10. VARIABLES TABLE
 local vars = {
-    icon         = data.weather[1].icon,
-    uni_char     = uni_char,
+    weather_icon = final_icon,
+    uni_char     = uni_icons[icon_code:sub(1, 2)] or "✨",
     temp         = math_round(data.main.temp),
     temp_max     = nws_high or math_round(data.main.temp_max),
     temp_min     = nws_low  or math_round(data.main.temp_min),
     humidity     = math_round(data.main.humidity),
     pressure     = math_round(data.main.pressure),
-    measure      = measure,
+    measure      = '°' .. (cf == 'metric' and 'C' or 'F'),
     conditions   = data.weather[1].description,
     wind         = math_round(data.wind.speed),
-    wind_units   = wind_units,
+    wind_units   = (cf == 'metric' and 'kph' or 'mph'),
     deg          = degrees_to_direction(data.wind.deg),
     deg2         = math_round(data.wind.deg),
     arrow        = arrow,
-    arrow_plain   = cache_path .. "wind_plain_" .. clean_ts .. ".svg",
-    arrow_circle  = cache_path .. "wind_circle_" .. clean_ts .. ".svg",
     arrow_dynamic = cache_path .. "wind_dynamic_" .. clean_ts .. ".svg",
     arrow_x      = math.floor(dynamic_x),
     sunrise      = format_time_portable(data.sys.sunrise),
@@ -216,22 +180,15 @@ local vars = {
     updated      = os.date("%H:%M", data.timestamp)
 }
 
--- ${image ]] .. icon_path .. icon_theme .. "/" .. icon_family .. [[/$(icon).png -p 150,28 -s 50x50}
-
--- TEMPLATE
+-- 11. TEMPLATE (restored with wind arrow image)
 local conky_text = [[
 ${voffset 20}${goto 85}${font7}${color1}$(location)${color4}
-${image ]] .. (icon_family == "owm-4x" and cache_path or (icon_path .. icon_theme .. "/" .. icon_family .. "/")) .. [[$(icon).png -p 150,28 -s 50x50}
+${image $(weather_icon) -p 150,28 -s 60x60}
 ${voffset -1}${goto 7}${font :size=9}${uppercase ${time %a  %d  %b  |  %Y}}$alignr${time | d: %-j | w: %-U}
 ${voffset 2}${goto 7}${font :size=10}$(temp)$(measure)  |$alignc  $(conditions) $alignr | $(temp_max)/$(temp_min)
 ${voffset 1}${goto 7}${font Hack Nerd Font:size=12}${color1}${color4}${font :size=10}    $(humidity)%      |  ${font Hack Nerd Font:size=12}${color1}  ${color4}${font :size=10}  $(pressure)$alignr${font Symbola:size=11}$(uni_char)
-${voffset -5}${font Noto Serif Tibetan:size=12:bold}${color1}༄${color4}${font :size=10}  $(deg)  |  $(deg2)°  |  $(wind) $(wind_units)${image $(arrow_dynamic) -p 168, 142 -s 32x32}
+${voffset -5}${font Noto Serif Tibetan:size=12:bold}${color1}༄${color4}${font :size=10}  $(deg)  |  $(deg2)°  |  $(wind) $(wind_units)${image $(arrow_dynamic) -p 170, 142 -s 32x32}
 ${voffset -1}${goto 7}${font Hack Nerd Font:size=18}${color1}󰖜${color4}${font :size=10}${voffset -1}     $(sunrise)${goto 90}${voffset -6}${font Hack Nerd Font:size=18}${color1}󰖛${voffset -4}${color4}${font :size=10}     $(sunset)$alignr${font DejaVu Sans:size=8}${color4}$(updated)
 ]]
 
-
-local output = conky_text:gsub("%$%(([%w_]+)%)", function(name)
-    return tostring(vars[name] or ("MISSING:" .. name))
-end)
-
-io.write(output)
+io.write((conky_text:gsub("%$%(([%w_]+)%)", function(n) return tostring(vars[n] or n) end)))

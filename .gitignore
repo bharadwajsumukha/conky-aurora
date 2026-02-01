@@ -1,2 +1,6 @@
 *.env
+*.hold
+*.dev*
+**/dev/
+**/.cache/
 !.env-example

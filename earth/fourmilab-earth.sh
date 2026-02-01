@@ -59,7 +59,7 @@ else
     # If no current image exists, restore from backup
     if [ ! -f "$EARTH_IMG" ] && [ -f "$BACKUP_IMG" ]; then
         echo "[$NOW] Restoring from backup image."
-        cp "$BACKUP_IMG" "$EARTH_IMG"
+        cp -p "$BACKUP_IMG" "$EARTH_IMG"
     fi
     exit 1
 fi

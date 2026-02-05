@@ -1,0 +1,86 @@
+--[[ conky-center-calendar.rc
+A Calendar for the top-middle of the screen. Month name color based on material design.
+v1.0 2026-02-05 @rew62
+]]
+
+
+conky.config = {
+    -- Window settings
+    own_window = true,
+    own_window_type = 'desktop',
+    own_window_transparent = true,
+    own_window_argb_visual = true,
+    own_window_argb_value = 0,
+    own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
+    
+    -- Position and size
+    alignment = 'top_middle',
+    gap_x = 0,
+    gap_y = 50,
+    minimum_width = 220,
+    minimum_height = 280,
+    
+    -- Graphics settings
+    draw_borders = false,
+    draw_outline = false,
+    draw_shades = false,
+    draw_graph_borders = false,
+    
+    -- Text settings
+    use_xft = true,
+    font = 'DejaVu Sans:size=10',
+    xftalpha = 1,
+    uppercase = false,
+    
+    -- Colors
+    default_color = 'ffffff',
+    color1 = 'ffffff',  -- White for active text
+    color2 = 'b8a8d0',  -- Lighter purple for inactive days
+    color3 = 'f5f5f5',  -- White for main date
+    color4 = '39FF14',  -- Soft green for circle
+    color5 = '4CAF50',  -- Material Design Green
+    
+    -- Update settings
+    update_interval = 1,
+    total_run_times = 0,
+    
+    -- Performance
+    double_buffer = true,
+    no_buffers = true,
+    
+    -- Padding
+    border_inner_margin = 20,
+    border_outer_margin = 0,
+}
+
+conky.text = [[
+# Day of week header (S M T W T F S)
+${voffset -3}${alignc}${font DejaVu Sans:size=14:weight=light}\
+${if_match ${time %u}==7}${font DejaVu Sans:size=14:weight=bold}${color4}S${font DejaVu Sans:size=14:weight=light}${else}${color2}S${endif}  \
+${if_match ${time %u}==1}${font DejaVu Sans:size=14:weight=bold}${color4}M${font DejaVu Sans:size=14:weight=light}${else}${color2}M${endif}  \
+${if_match ${time %u}==2}${font DejaVu Sans:size=14:weight=bold}${color4}T${font DejaVu Sans:size=14:weight=light}${else}${color2}T${endif}  \
+${if_match ${time %u}==3}${font DejaVu Sans:size=14:weight=bold}${color4}W${font DejaVu Sans:size=14:weight=light}${else}${color2}W${endif}  \
+${if_match ${time %u}==4}${font DejaVu Sans:size=14:weight=bold}${color4}T${font DejaVu Sans:size=14:weight=light}${else}${color2}T${endif}  \
+${if_match ${time %u}==5}${font DejaVu Sans:size=14:weight=bold}${color4}F${font DejaVu Sans:size=14:weight=light}${else}${color2}F${endif}  \
+${if_match ${time %u}==6}${font DejaVu Sans:size=14:weight=bold}${color4}S${font DejaVu Sans:size=14:weight=light}${else}${color2}S${endif}
+# Large date number
+${voffset 10}${alignc}${font Metropolis:size=90:weight=light}${color3}${time %d}
+${voffset -180}
+# Month name in script/elegant font
+${alignc}${font Good Times:size=42}\
+${if_match ${time %m}==01}${color E57373}${endif}\
+${if_match ${time %m}==02}${color F06292}${endif}\
+${if_match ${time %m}==03}${color BA68C8}${endif}\
+${if_match ${time %m}==04}${color 9575CD}${endif}\
+${if_match ${time %m}==05}${color 7986CB}${endif}\
+${if_match ${time %m}==06}${color 64B5F6}${endif}\
+${if_match ${time %m}==07}${color 4DD0E1}${endif}\
+${if_match ${time %m}==08}${color 4DB6AC}${endif}\
+${if_match ${time %m}==09}${color 81C784}${endif}\
+${if_match ${time %m}==10}${color AED581}${endif}\
+${if_match ${time %m}==11}${color FFB74D}${endif}\
+${if_match ${time %m}==12}${color A1887F}${endif}\
+${time %B}
+# Two numbers at bottom (you can customize these)
+${voffset -20}${alignc}${font GE Inspira:size=32:weight=light}${color1}${time %H} ${color5}|${color1} ${time %M}
+]]

@@ -1,0 +1,97 @@
+-- network.rc 
+-- v1 01 2026-03-09 @rew62
+
+conky.config = {
+    -- Window / display settings
+    own_window = true,
+    -- own_window_type = 'desktop',          -- sits on the desktop background
+    own_window_type = 'normal',
+    own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
+    own_window_transparent = true,
+    own_window_argb_visual = true,
+    own_window_argb_value = 0,
+
+    double_buffer = true,
+    background = false,
+
+    -- Position (adjust to taste)
+    alignment = 'top_right',
+    gap_x = 10,
+    gap_y = 655,
+
+    -- Window size — widen/tighten to match your theme
+    minimum_width = 200,
+    maximum_width = 200,
+    minimum_height = 200,
+
+    -- Update interval in seconds
+    update_interval = 1.0,
+
+  default_color = '8FBC8F',
+  -- color1 = '#888888', 
+  -- color2 = '#AAAAAA', 
+  -- color3 = '#cccccc', 
+  -- color4 = '#BDBDBD',
+  -- color5 = '#CCCCCC', 
+  -- color6 = '#aa0000',
+  color1 = '98FB98',  -- PaleGreen
+  color2 = '2E8B57',  -- SeaGreen
+  color3 = 'ADFF2F',  -- GreenYellow
+  color4 = 'ECF0F1',  -- white
+  color5 = 'F0E68C',  -- khaki1
+   
+  -- --Signal Colours
+  -- color7 = '#1F7411',  				--green
+  -- color8 = '#FFA726',  				--orange
+  -- color9 = '#F1544B',  				--firebrick
+  
+  -- Fonts (Renumbered)
+  font = 'Ubuntu Mono',
+  font1 = 'Good Times:size=12',
+  font2 = 'GE Inspira:bold:size=12',
+  font3 = 'IBM Plex Mono:bold:size=10',
+  font4 = 'Fira Code:size=10',
+  font5 = 'Liberation Sans:size=11',
+  font6 = 'Noto Sans:size=14',
+  font7 = 'DejaVu Sans:size=11',
+  font8 = 'zekton:size=12',
+   
+  -- Templates
+  template1 = "eth0",					-- LAN interface name
+
+    -- Lua Load
+    lua_load = './settings.lua scripts/loadall.lua',
+    lua_draw_hook_pre = 'main',
+    lua_startup_hook = 'vars',
+  
+  -- Lua integration
+  --  lua_load = 'scripts/lua3-bars.lua',
+   -- lua_draw_hook_pre = 'main_bars',
+
+    -- Font / color defaults
+    use_xft = true,
+    font = 'Ubuntu:size=9',
+    --default_color = '00FF00',
+    --color1 = 'E6E6E6',      -- label color
+    --color2 = '00FF00',      -- value color
+
+    -- Prevent flickering
+    no_buffers = true,
+    short_units = true,
+    cpu_avg_samples = 2,
+    net_avg_samples = 2,
+}
+
+conky.text = [[
+${font1}${color1}${goto 10}NETWORK${alignr}${color4}${gw_iface}  
+
+${voffset -10}${font2}${goto 8}${if_up ${template1}}${color1}LAN IP:${font3}${color4}$alignr${addr ${gw_iface}}
+${font2}${color1}${goto 5}WAN IP:${color4}$alignr${font3}${texeci 86400 curl -s https://api.ipify.org}
+
+${voffset -10}${color1}${goto 8}${font PizzaDude Bullets:size=10}O${font3}${voffset -3} Up: ${color4}${upspeed ${template1}} ${goto 105}${color1}${font PizzaDude Bullets:size=10}U${voffset -3}${font3} Dn: $alignr${color4}${downspeed ${template1}}
+
+${voffset 5}${goto 8}${upspeedgraph ${template1} 20,95 0000FF 00FFFF -t -l}${goto 110}${downspeedgraph ${template1} 20,90 FFFF00 FF4500 -t}$color
+${font2}${voffset -11}${goto 8}${color1}Total: ${color #00FFFF}${totalup ${template1}} ${goto 110}${color1}Total: ${color #FF4500}${totaldown ${template1}}
+
+${voffset -10}${color1}${goto 15}In: ${color4}${tcp_portmon 1 32767 count}${color1}   Out: ${color4}${tcp_portmon 32768 61000 count}${alignr}${color1}Total: ${color4}${tcp_portmon 1 65535 count} ${endif}
+]]

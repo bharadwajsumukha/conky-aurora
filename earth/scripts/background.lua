@@ -1,7 +1,7 @@
 -- scripts/background.lua
--- Background + border drawing for unified music conky
+-- Background + border drawing
 -- Adapted from @wim66 original; reads settings.lua for colors/dimensions
--- @rew62 / unified 2026
+-- v1 02 2026-03-09 @rew62
 
 require 'cairo'
 

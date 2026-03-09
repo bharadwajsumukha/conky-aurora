@@ -1,6 +1,5 @@
 -- settings.lua
--- Unified Music Conky Settings
--- @rew62 2026
+-- v1 04 2026-03-09 @rew62
 
 package.path = "./scripts/?.lua"
 

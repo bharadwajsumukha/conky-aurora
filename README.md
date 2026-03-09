@@ -9,8 +9,9 @@ A set of Conky scripts built on Linux Mint v22.2 (Zara)
 
 ## Credits
 
-- **allcombined.lua** - Created by mrpeachy
-- **All other scripts** - Created by R Webb (@rew62)
+- **allcombined.lua** - created by mrpeachy
+- **background.lua, loadall.lua, lua3-bars.lua, and image.lua** - created by wim66.
+- **All other scripts** - created by @rew62
 
 ## Scripts Overview
 

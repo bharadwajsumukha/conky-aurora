@@ -3,7 +3,6 @@ A Calendar for the top-middle of the screen. Month name color based on material 
 v1.0 2026-02-05 @rew62
 ]]
 
-
 conky.config = {
     -- Window settings
     own_window = true,
@@ -14,11 +13,12 @@ conky.config = {
     own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
     
     -- Position and size
-    alignment = 'top_middle',
-    gap_x = 0,
-    gap_y = 150,
-    minimum_width = 220,
-    minimum_height = 280,
+    alignment = 'top_right',
+    gap_x = 10,
+    gap_y = 20,
+    minimum_height = 200,
+    minimum_width = 200,
+    --maximum_width = 200,
     
     -- Graphics settings
     draw_borders = false,
@@ -49,9 +49,13 @@ conky.config = {
     no_buffers = true,
     
     -- Padding
-    border_inner_margin = 20,
+    border_inner_margin = 10,
     border_outer_margin = 0,
-}
+
+    -- Lua Load
+    lua_load = './settings.lua ./scripts/background.lua',
+    lua_draw_hook_pre = 'conky_draw_background',
+};
 
 conky.text = [[
 # Day of week header (S M T W T F S)
@@ -64,10 +68,10 @@ ${if_match ${time %u}==4}${font DejaVu Sans:size=14:weight=bold}${color4}T${font
 ${if_match ${time %u}==5}${font DejaVu Sans:size=14:weight=bold}${color4}F${font DejaVu Sans:size=14:weight=light}${else}${color2}F${endif}  \
 ${if_match ${time %u}==6}${font DejaVu Sans:size=14:weight=bold}${color4}S${font DejaVu Sans:size=14:weight=light}${else}${color2}S${endif}
 # Large date number
-${voffset 10}${alignc}${font Metropolis:size=90:weight=light}${color3}${time %d}
-${voffset -180}
+${voffset 3}${alignc}${font Metropolis:size=56:weight=light}${color3}${time %d}
+${voffset -115}
 # Month name in script/elegant font
-${alignc}${font Good Times:size=42}\
+${alignc}${font Good Times:size=20}\
 ${if_match ${time %m}==01}${color E57373}${endif}\
 ${if_match ${time %m}==02}${color F06292}${endif}\
 ${if_match ${time %m}==03}${color BA68C8}${endif}\
@@ -82,5 +86,5 @@ ${if_match ${time %m}==11}${color FFB74D}${endif}\
 ${if_match ${time %m}==12}${color A1887F}${endif}\
 ${time %B}
 # Two numbers at bottom (you can customize these)
-${voffset -20}${alignc}${font GE Inspira:size=32:weight=light}${color1}${time %H} ${color5}|${color1} ${time %M}
+${voffset 2}${alignc}${font GE Inspira:size=32:weight=light}${color1}${time %H} ${color5}|${color1} ${time %M}
 ]]

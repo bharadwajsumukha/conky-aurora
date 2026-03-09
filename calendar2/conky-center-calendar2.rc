@@ -17,8 +17,8 @@ conky.config = {
     alignment = 'top_middle',
     gap_x = 0,
     gap_y = 150,
-    minimum_width = 220,
-    minimum_height = 280,
+    minimum_width = 400,
+    minimum_height = 300,
     
     -- Graphics settings
     draw_borders = false,
@@ -51,7 +51,11 @@ conky.config = {
     -- Padding
     border_inner_margin = 20,
     border_outer_margin = 0,
-}
+
+    -- Lua Load
+    lua_load = './settings.lua ./scripts/background.lua',
+    lua_draw_hook_pre = 'conky_draw_background',
+};
 
 conky.text = [[
 # Day of week header (S M T W T F S)

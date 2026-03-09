@@ -18,11 +18,23 @@ A set of Conky scripts built on Linux Mint v22.2 (Zara)
 2. **earth/fourmilab.sh** - Earth viewer script using fourmilab.ch
 3. **sidepanel/sidepanel-1.rc** - Sidepanel with Sun and Moon
 4. **sidepanel/sidepanel-2.rc** - Sidepanel with System, CPU, Memory, and Network information
+5. **calendar2/sidepanel-calendar.rc** - Stand Alone Calendar with 'normal' window allowing for 'Alt + mouse' moves. Note: To make move persistent, edit .rc file.
+6. **earth/earth.rc** - Stand Alone Earth viewer from the perspective of the Sun.
+7. **moon/moon.rc** - Stand Alone moon viewer with tilt based on Lat/Lon.
+8. **music/music.sh** - Shell script that starts now playing, eq, and lyrics scripts in the sub directories.
+9.  **music/nowplaying** - Scripts that read playerctl for current song info, and also display system volume.
+10. **music/lyrics** - Lyrics scripts
+11. **music/eq** - Cava Audio Visualizer scripts.
+12. **system/system.rc** - Stand Alone system monitor.
+13. **network/network.rc** - Stand Alone network monitor script.
+
+
 
 ### Additional Components
 
 - **weather.lua** - Contains additional conky variables
 - **master-loader.lua** - Handles Cairo drawing functions and acts as the main Lua hook for Conky
+- **music/lyrics/setup.sh** - Checks for dependecies for the lyrics script. Note: lyrics script uses gawk, not mawk that comes by default with Linux Mint.
 
 ## About fourmilab.ch
 
@@ -53,6 +65,9 @@ sudo apt install fonts-symbola
 
 # Install gcalcli
 sudo apt install gcalcli
+
+# Install gawk
+sudo apt install gawk
 ```
 
 Additionally fourmilab.sh utilizes the convert command from ImageMagick which is installed by default on Linix Mint. Install ImageMagick if convert is not available.

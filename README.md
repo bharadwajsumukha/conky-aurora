@@ -34,7 +34,7 @@ A set of Conky scripts built on Linux Mint v22.2 (Zara)
 
 - **weather.lua** - Contains additional conky variables
 - **master-loader.lua** - Handles Cairo drawing functions and acts as the main Lua hook for Conky
-- **music/lyrics/setup.sh** - Checks for dependecies for the lyrics script. Note: lyrics script uses gawk, not mawk that comes by default with Linux Mint.
+- **music/lyrics/setup.sh** - Checks for dependecies for the lyrics script. Note: lyrics script uses gawk, not mawk that is default with Linux Mint.
 
 ## About fourmilab.ch
 
@@ -154,6 +154,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Third-Party Components
 
-- **allcombined.lua** - Created by mrpeachy
+- **allcombined.lua** - created by mrpeachy
+- **background.lua, loadall.lua, lua3-bars.lua, and image.lua** - created by wim66.
+
 
 Please refer to individual script files for any additional licensing information related to third-party components.

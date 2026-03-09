@@ -1,0 +1,65 @@
+-- moon.rc 
+-- stand-alone moon conky with lua draw and border
+-- v1 01 2026-03-09 @rew62
+
+conky.config = {
+    -- Window / display settings
+    own_window = true,
+    -- own_window_type = 'desktop',          -- sits on the desktop background
+    own_window_type = 'normal',
+    own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
+    own_window_transparent = true,
+    own_window_argb_visual = true,
+    own_window_argb_value = 0,
+
+    double_buffer = true,
+    background = false,
+
+    -- Position (adjust to taste)
+    alignment = 'top_right',
+    gap_x = 15,
+    gap_y = 430,
+
+    -- Window size — widen/tighten to match your theme
+    minimum_width = 190,
+    maximum_width = 190,
+    minimum_height = 200,
+
+    -- Update interval in seconds
+    update_interval = 10.0,
+
+    default_color = '8FBC8F',
+    color1 = '98FB98',  -- PaleGreen
+    color2 = '2E8B57',  -- SeaGreen
+    color3 = 'ADFF2F',  -- GreenYellow
+    color4 = 'ECF0F1',  -- white
+    color5 = 'F0E68C',  -- khaki1
+   
+    -- Font / color defaults
+    use_xft = true,
+    font = 'Ubuntu:size=9',
+    font1 = 'Good Times:size=12',
+    font2 = 'Fira Code:bold:size=10',
+    font3 = 'Liberation Sans:size=11',
+    font4 = 'zekton:size=10',
+
+    -- Lua Load
+    lua_load = './settings.lua scripts/loadall.lua',
+    lua_draw_hook_pre = 'main',
+    lua_startup_hook = 'vars',
+    lua_draw_hook_post = 'conky_draw_image /dev/shm/moon_rotated.png 55 10 110 110'
+}
+
+conky.text = [[
+${execi 1800 ./scripts/update-moon.sh -t}\
+#${color4}${alignr}${font :size=16}${time %r}${font}
+#----------------------- Moon -----------------------
+${voffset -1}${goto 10}${color1}${font1}MOON${font3}${voffset -10}
+${if_existing /dev/shm/moon_script_error}${font Symbola:size=8}${color red}${alignr 10}${voffset -15}● ${else}${font Symbola:size=4}${color green}${alignr 10}${voffset -15}●${endif}
+${font2}${voffset 80}
+${execpi 600 /usr/bin/bash -c 'for i in {1..5}; do [ -s /dev/shm/moon-data2.txt ] && cat /dev/shm/moon-data2.txt && exit; sleep 1; done; echo "Loading..."'}
+]]
+
+--[[
+#${font2}${execpi 600 /usr/bin/bash -c 'for i in {1..5}; do [ -s /dev/shm/raw.tmp ] && cat /dev/shm/raw.tmp | sed "s/:\(.*\)/:\${color4}\${alignr}\1/; s/^\([^:]*\)/\${color1}\1/" && exit; sleep 1; done; echo "Loading..."'}
+--]]

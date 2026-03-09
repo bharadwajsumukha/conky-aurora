@@ -8,10 +8,7 @@ function conky_vars()
     bg_COLOR     = "0x353376,0.4"
     layer_2      = "0,0xffffff,0.5,0.5,0xc2c2c2,0.50,1,0xffffff,0.5"
 
-    -- Unified window dimensions (must match music.rc minimum_width/height)
+    -- Window Dimensions 
     width  = 200
     height = 200
-
-    bg_x = 0
-    bg_y = 0
 end

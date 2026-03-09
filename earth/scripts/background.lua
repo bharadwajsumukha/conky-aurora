@@ -58,8 +58,8 @@ local layer2_color = parse_layer2_color(layer_2      or "0,0xffffff,0.5,0.5,0xc2
 -- ── box definitions ───────────────────────────────────────
 
 local function get_boxes()
-    local W = width  or 340
-    local H = height or 300
+    local W = conky_w or 300
+    local H = conky_h or 300
     return {
         {
             type = "background",

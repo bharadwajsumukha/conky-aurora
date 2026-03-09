@@ -9,6 +9,6 @@ function conky_vars()
     layer_2      = "0,0xffffff,0.5,0.5,0xc2c2c2,0.50,1,0xffffff,0.5"
 
     -- Window Dimensions 
-    width  = 200
-    height = 200
+    conky_w = 200
+    conky_h = 200
 end

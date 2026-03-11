@@ -218,7 +218,7 @@ function conky_main_bars()
     -- 500 Mbit  = 62500 KiB/s  ← adjust this to YOUR connection speed
     {
       name = "downspeedf",
-      arg = "eth0",         -- change to your interface: eth0, enp3s0, wlan0, etc.
+      arg = var_NETWORK or "eth0", -- change to your interface: eth0, enp3s0, wlan0, etc.
       --max = 125000,          -- ← YOUR LINK SPEED IN KiB/s  (100 Mbit example)
       max = 12500,          -- ← YOUR LINK SPEED IN KiB/s  (100 Mbit example)
       log_scale = true,  -- enables logarithmic scale
@@ -243,7 +243,7 @@ function conky_main_bars()
     },
     {
       name = "upspeedf",
-      arg = "eth0",         -- change to your interface: eth0, enp3s0, wlan0, etc.
+      arg = var_NETWORK or "eth0",         -- change to your interface: eth0, enp3s0, wlan0, etc.
       --max = 125000,          -- ← YOUR LINK SPEED IN KiB/s  (100 Mbit example)
       max = 12500,          -- ← YOUR LINK SPEED IN KiB/s  (100 Mbit example)
       log_scale = true,  -- enables logarithmic scale

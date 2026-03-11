@@ -11,7 +11,7 @@ function conky_vars()
 
     -- Unified window dimensions (must match lyrics.conky minimum_width/height)
     width  = 340
-    height = 80
+    height = 90
 
     bg_x = 0
     bg_y = 0

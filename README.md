@@ -3,15 +3,17 @@
 ![Issues](https://img.shields.io/github/issues/rew62/conky-aurora)
 ![Last Commit](https://img.shields.io/github/last-commit/rew62/conky-aurora)
 
-# Conky Scripts Collection
+# Aurora 2.0 - A Conky Scripts Collection
 
-A set of Conky scripts built on Linux Mint v22.2 (Zara)
+A set of Conky scripts built on Linux Mint v22.2 (Zara), and v22.3 (Zena)
 
 ## Credits
 
 - **allcombined.lua** - created by mrpeachy
-- **background.lua, loadall.lua, lua3-bars.lua, and image.lua** - created by wim66.
+- **background.lua, loadall.lua, lua3-bars.lua, and image.lua** - created by @wim66.
 - **All other scripts** - created by @rew62
+
+▶️  **TL;DR - Run the configuation script!**
 
 ## Scripts Overview
 
@@ -28,14 +30,6 @@ A set of Conky scripts built on Linux Mint v22.2 (Zara)
 11. **music/eq** - Cava Audio Visualizer scripts.
 12. **system/system.rc** - Stand Alone system monitor.
 13. **network/network.rc** - Stand Alone network monitor script.
-
-
-
-### Additional Components
-
-- **weather.lua** - Contains additional conky variables
-- **master-loader.lua** - Handles Cairo drawing functions and acts as the main Lua hook for Conky
-- **music/lyrics/setup.sh** - Checks for dependecies for the lyrics script. Note: lyrics script uses gawk, not mawk that is default with Linux Mint.
 
 ## About fourmilab.ch
 
@@ -61,8 +55,9 @@ sudo apt install conky-all
 # Install Lua
 sudo apt install lua5.4 liblua5.4-dev
 
-# Install Symbola Font
+# Install Fonts
 sudo apt install fonts-symbola
+sudo apt install fonts-firacode
 
 # Install gcalcli
 sudo apt install gcalcli
@@ -74,7 +69,7 @@ sudo apt install gawk
 Additionally fourmilab.sh utilizes the convert command from ImageMagick which is installed by default on Linix Mint. Install ImageMagick if convert is not available.
 
 
-### 2. Install Custom Fonts
+### 2. Install Fonts
 
 Install the fonts located in the `fonts` directory.
 
@@ -87,45 +82,24 @@ Install the fonts located in the `fonts` directory.
       - Your measurement units: `'metric'` (Celsius, m/s) or `'imperial'` (Fahrenheit, mph)
 
 
-### 4. Run Configuration Script to create a .env file with your keys
+### 4. 🔑 ▶️ Run `config.sh` The configuration script will walk you through everthing you need including creating .env file with your keys, checking for fonts, and checking lyrics script dependencies.
 
-The `.env` file requires these keys:
-- `apikey` - Your API key from openweathermap.org
-- `cityid` - Your city ID
-- `cf` - Your weather measure units (metric or imperial)
-- `lat` - Latitude (decimal format)
-- `lon` - Longitude (decimal format)
-
-See `.env-example` for the format reference.
-
-### Running the configuration script
 ```bash
 ./config.sh
 ```
+The configuration script will walk you through everthing you need including creating .env file with your keys, checking for fonts, and checking lyrics script dependencies.
 
-The script will:
-1. Load existing values from `.env` if present
-2. Prompt for each configuration value (press Enter to keep existing/default)
-3. Attempt to Auto-detect your network interface
-4. Ask for confirmation before writing
-5. Update `.env`, weather.lua, and sidepanel files with values entered.
+### 5. Set up cron job to generate an Image of the Earth every 10 mintes.
 
-### 5. Set Up Cron Job to generate an Image of the Earth every 10 mintes.
-
-1. Edit `earth/crontab` and replace <user> with your home directory name.
-
-   **crontab entries:**
-   ```cron
-   reboot /home/<user>/.conky/rew62/earth/fourmilab-earth.sh > /dev/shm/cron_debug.log 2>&1
-   */10 * * * * /home/<user>/.conky/rew62/earth/fourmilab-earth.sh > /dev/shm/cron_debug.log 2>&1
+1. Check `earth/crontab` to verifiy the correct directory path to the fourmilab-earth.sh shell script.
    ```
-
+   cat earth/crontab
+   ```
 2. Install the crontab:
-```bash
-crontab < earth/crontab
-```
-
-- Verify installation:
+   ```bash
+   crontab < earth/crontab
+   ```
+3. Verify installation:
       `crontab -l`
 
 ### 6. Set Up gcalcli (optional)
@@ -137,14 +111,17 @@ crontab < earth/crontab
 ### 7. Run the scripts:
 ```
 conky -c sidepanel/sidepanel-1.rc
-```
-or
-```
 conky -c sidepanel/sidepanel-2.rc
 ```
-and the calendar
+or stand alone conky's, Example...
 ```
-conky -c calendar/calendar.rc
+conky -c earth/earth.rc
+conky -c system/system.rc
+```
+and all 3 music scripts can be started via:
+```
+music/music.sh start
+music/music.sh stop
 ```
 
 Change `-- background = false` to `-- background = true,` in the .rc files to fork the conky's to the background or install conky manager to mange your scripts.
@@ -157,6 +134,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **allcombined.lua** - created by mrpeachy
 - **background.lua, loadall.lua, lua3-bars.lua, and image.lua** - created by wim66.
-
-
-Please refer to individual script files for any additional licensing information related to third-party components.

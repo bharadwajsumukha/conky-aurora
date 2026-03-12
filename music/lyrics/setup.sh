@@ -17,9 +17,9 @@ fail() { printf "${RED}  [MISSING]${NC} %s\n" "$1"; MISSING=1; }
 
 MISSING=0
 
-echo ""
-echo "=== Lyrics-Conky Setup Check ==="
-echo ""
+#echo ""
+#echo "=== Lyrics-Conky Setup Check ==="
+#echo ""
 
 # ── Required binaries ─────────────────────────────────────────────────────
 echo "--- Required packages ---"
@@ -52,20 +52,6 @@ else
     warn "After install, awk symlink should update automatically."
     warn "Verify with: awk --version | head -1"
     MISSING=1
-fi
-
-echo ""
-
-# ── playerctl can see a player (non-fatal, informational) ─────────────────
-echo "--- playerctl ---"
-PLAYERS=$(playerctl -l 2>/dev/null)
-if [ -n "$PLAYERS" ]; then
-    ok "Active players found:"
-    while IFS= read -r p; do
-        printf "       • %s\n" "$p"
-    done <<< "$PLAYERS"
-else
-    warn "No active media players detected right now (non-fatal — start one before running conky)"
 fi
 
 echo ""
@@ -131,9 +117,23 @@ fi
 
 echo ""
 
+# ── playerctl can see a player (non-fatal, informational) ─────────────────
+echo "--- playerctl ---"
+PLAYERS=$(playerctl -l 2>/dev/null)
+if [ -n "$PLAYERS" ]; then
+    ok "Active players found:"
+    while IFS= read -r p; do
+        printf "       • %s\n" "$p"
+    done <<< "$PLAYERS"
+else
+    warn "No active media players detected. Why not listen to some music!"
+fi
+
+echo ""
+
 # ── Summary ───────────────────────────────────────────────────────────────
 if [ "$MISSING" -eq 0 ]; then
-    echo -e "${GRN}All checks passed. Run ./start-lyrics-conky.sh to start.${NC}"
+    echo -e "${GRN}All checks passed. Run music/music.sh to start all music scripts or music/lyrics/start-lyrics-conky.sh to start lyrics only.${NC}"
 else
     echo -e "${RED}Some checks failed. Fix the above before starting.${NC}"
     echo ""
